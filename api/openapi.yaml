@@ -1,0 +1,931 @@
+openapi: 3.0.3
+info:
+  description: BitBucket Server Code Insights API
+  title: BitBucket Server Code Insights API
+  version: 1.0.0
+servers:
+- url: '{protocol}://{bitbucketDomain}/rest'
+  variables:
+    protocol:
+      default: http
+      enum:
+      - https
+      - http
+    bitbucketDomain:
+      default: localhost
+      description: Your bitbucket domain
+security:
+- basicAuth: []
+- bearerAuth: []
+paths:
+  /insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reposts:
+    get:
+      description: Retrieve all reports for the given commit.
+      operationId: GetReports
+      parameters:
+      - description: The project key
+        explode: false
+        in: path
+        name: projectKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The repository slug
+        explode: false
+        in: path
+        name: repositorySlug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The commit ID. This must be a full 40 character commit hash
+        explode: false
+        in: path
+        name: commitId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The start parameter indicates which item should be used as the
+          first item in the page of results.
+        explode: true
+        in: query
+        name: start
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: The limit parameter indicates how many results to return per
+          page.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportsListResponse'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |
+            The currently authenticated user has insufficient permissions (REPO_READ) to get insight reports.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The specified project, repository or commit does not exist.
+      summary: Get reports list for specified commit
+      tags:
+      - insights
+  /insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/annotations:
+    get:
+      operationId: GetAnnotations
+      parameters:
+      - description: The project key
+        explode: false
+        in: path
+        name: projectKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The repository slug
+        explode: false
+        in: path
+        name: repositorySlug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The commit ID. This must be a full 40 character commit hash
+        explode: false
+        in: path
+        name: commitId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: true
+        in: query
+        name: externalId
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: The report key
+        explode: true
+        in: query
+        name: key
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: path
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: severity
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnotationsList'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |
+            The currently authenticated user has insufficient permissions (REPO_READ needed) to get insight reports.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The specified project, repository, commit, or report does not
+            exist.
+      summary: Retrieve the specified commit's annotations.
+      tags:
+      - insights
+  /insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{reportKey}:
+    delete:
+      operationId: DeleteReport
+      parameters:
+      - description: The project key
+        explode: false
+        in: path
+        name: projectKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The repository slug
+        explode: false
+        in: path
+        name: repositorySlug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The commit ID. This must be a full 40 character commit hash
+        explode: false
+        in: path
+        name: commitId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          A unique string representing the report as chosen by the reporter. This should be unique enough
+          to not clash with other report's keys. To do this, we recommend namespacing the key using reverse DNS.
+        explode: false
+        in: path
+        name: reportKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: The report and associated annotations were successfully deleted.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |
+            The currently authenticated user has insufficient permissions to delete insight reports or was not
+            the author (REPO_READ for author otherwise REPO_ADMIN).
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The specified project, repository, commit or report does not
+            exist.
+      summary: Delete a report for the given commit. Also deletes any annotations
+        associated with this report.
+      tags:
+      - insights
+    get:
+      operationId: GetReport
+      parameters:
+      - description: The project key
+        explode: false
+        in: path
+        name: projectKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The repository slug
+        explode: false
+        in: path
+        name: repositorySlug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The commit ID. This must be a full 40 character commit hash
+        explode: false
+        in: path
+        name: commitId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          A unique string representing the report as chosen by the reporter. This should be unique enough
+          to not clash with other report's keys. To do this, we recommend namespacing the key using reverse DNS.
+        explode: false
+        in: path
+        name: reportKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |
+            The currently authenticated user has insufficient permissions (REPO_READ needed) to get insight reports.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The specified project, repository, commit, or report does not
+            exist.
+      summary: Retrieve the specified report.
+      tags:
+      - insights
+    put:
+      description: |
+        Create a new insight report, or replace the existing one if a report already exists for the given repository,
+        commit, and report key. A request to replace an existing report will be rejected if the authenticated user
+        was not the creator of the specified report.
+        The report key should be a unique string chosen by the reporter and should be unique enough not to potentially
+        clash with report keys from other reporters. We recommend using reverse DNS namespacing or a similar standard
+        to ensure that collision is avoided.
+      operationId: UpdateReport
+      parameters:
+      - description: The project key
+        explode: false
+        in: path
+        name: projectKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The repository slug
+        explode: false
+        in: path
+        name: repositorySlug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The commit ID. This must be a full 40 character commit hash
+        explode: false
+        in: path
+        name: commitId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          A unique string representing the report as chosen by the reporter. This should be unique enough
+          to not clash with other report's keys. To do this, we recommend namespacing the key using reverse DNS.
+        explode: false
+        in: path
+        name: reportKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |
+            One of the following error cases occurred (check the error message for more details):
+            The request does not contain a report title.
+            The data field contains unsupported objects.
+            The request does not contain a report key/
+            The provided commit hash is invalid, according to the validation rules mentioned for the commitId above.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |
+            The currently authenticated user is not permitted to create an insight report or authentication failed.
+      summary: Create a new insight report, or replace the existing one.
+      tags:
+      - insights
+  /insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{reportKey}/annotations:
+    delete:
+      description: |
+        Delete annotations for a given report that match the given external IDs, or all annotations if no
+        external IDs are provided.
+      operationId: DeleteAnnotations
+      parameters:
+      - description: The project key
+        explode: false
+        in: path
+        name: projectKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The repository slug
+        explode: false
+        in: path
+        name: repositorySlug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The commit ID. This must be a full 40 character commit hash
+        explode: false
+        in: path
+        name: commitId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          A unique string representing the report as chosen by the reporter. This should be unique enough
+          to not clash with other report's keys. To do this, we recommend namespacing the key using reverse DNS.
+        explode: false
+        in: path
+        name: reportKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          The external IDs for the annotations that are to be deleted. Can be specified more than once to delete
+          by more than one external ID, or can be unspecified to delete all annotations
+        explode: true
+        in: query
+        name: externalId
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "204":
+          description: The annotations were successfully deleted.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |
+            The currently authenticated user has insufficient permissions to delete insight reports or was
+            not the author (REPO_READ for author otherwise REPO_ADMIN).
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The specified project, repository, commit or report does not
+            exist.
+      summary: Delete annotations
+      tags:
+      - insights
+    get:
+      operationId: GetReportAnnotations
+      parameters:
+      - description: The project key
+        explode: false
+        in: path
+        name: projectKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The repository slug
+        explode: false
+        in: path
+        name: repositorySlug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The commit ID. This must be a full 40 character commit hash
+        explode: false
+        in: path
+        name: commitId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          A unique string representing the report as chosen by the reporter. This should be unique enough
+          to not clash with other report's keys. To do this, we recommend namespacing the key using reverse DNS.
+        explode: false
+        in: path
+        name: reportKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnotationsList'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |
+            The currently authenticated user has insufficient permissions (REPO_READ needed) to get insight reports.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The specified project, repository, commit, or report does not
+            exist.
+      summary: Retrieve the specified report's annotations.
+      tags:
+      - insights
+    post:
+      description: |
+        The request should be a JSON object mapping the string "annotations" to an array of maps containing the
+        annotation data, as described below. See also the example request.
+        A few things to note:
+
+        Annotations are an extension of a report, so a report must first exist in order to post annotations.
+        Annotations are posted separately from the report, and can be posted in bulk using this endpoint.
+
+        Only the annotations that are on lines changed in the unified diff will be displayed. This means it is
+        likely not all annotations posted will be displayed on the pull request It also means that if the user is
+        viewing a side-by-side diff, commit diff or iterative review diff they will not be able to view the annotations.
+
+        A report cannot have more than 1000 annotations by default, however this property is congurable at an
+        instance level. If the request would result in more than the maximum number of annotations being stored
+        then the entire request is rejected and no new annotations are stored.
+
+        There is no de-duplication of annotations on Bitbucket so be sure that reruns of builds will first delete
+        the report and annotations before creating them.
+      operationId: CreateAnnotations
+      parameters:
+      - description: The project key
+        explode: false
+        in: path
+        name: projectKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The repository slug
+        explode: false
+        in: path
+        name: repositorySlug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The commit ID. This must be a full 40 character commit hash
+        explode: false
+        in: path
+        name: commitId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          A unique string representing the report as chosen by the reporter. This should be unique enough
+          to not clash with other report's keys. To do this, we recommend namespacing the key using reverse DNS.
+        explode: false
+        in: path
+        name: reportKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnnotationsList'
+        required: true
+      responses:
+        "204":
+          description: An empty response indicating that the request succeeded.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |
+            The currently authenticated user is not the author of the report, or the author no longer has
+            sufficient permissions (REPO_READ).
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The specified project, repository, commit, or report does not
+            exist.
+      summary: Add annotations to the given report.
+      tags:
+      - insights
+  /insights/1.0/projects/{projectKey}/repos/{repositorySlug}/commits/{commitId}/reports/{reportKey}/annotations/{externalId}:
+    put:
+      description: |
+        A request to replace an existing annotation will be rejected if the authenticated user was not the
+        creator of the specified report.
+      operationId: UpdateAnnotation
+      parameters:
+      - description: The project key
+        explode: false
+        in: path
+        name: projectKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The repository slug
+        explode: false
+        in: path
+        name: repositorySlug
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The commit ID. This must be a full 40 character commit hash
+        explode: false
+        in: path
+        name: commitId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: |
+          A unique string representing the report as chosen by the reporter. This should be unique enough
+          to not clash with other report's keys. To do this, we recommend namespacing the key using reverse DNS.
+        explode: false
+        in: path
+        name: reportKey
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The external ID of the annotation that is to be updated or created
+        explode: false
+        in: path
+        name: externalId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Annotation'
+        required: false
+      responses:
+        "204":
+          description: No content, indicating that the request succeeded.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: |
+            The currently authenticated user is not the author of the report, or the author no longer
+            has sufficient permissions (REPO_READ).
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: The specified project, repository, commit, report or annotation
+            does not exist.
+      summary: Create an annotation with the given external ID, or replace it if it
+        already exists.
+      tags:
+      - insights
+components:
+  parameters:
+    start:
+      description: The start parameter indicates which item should be used as the
+        first item in the page of results.
+      explode: true
+      in: query
+      name: start
+      required: false
+      schema:
+        type: integer
+      style: form
+    limit:
+      description: The limit parameter indicates how many results to return per page.
+      explode: true
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+      style: form
+    projectKey:
+      description: The project key
+      explode: false
+      in: path
+      name: projectKey
+      required: true
+      schema:
+        type: string
+      style: simple
+    repositorySlug:
+      description: The repository slug
+      explode: false
+      in: path
+      name: repositorySlug
+      required: true
+      schema:
+        type: string
+      style: simple
+    commitId:
+      description: The commit ID. This must be a full 40 character commit hash
+      explode: false
+      in: path
+      name: commitId
+      required: true
+      schema:
+        type: string
+      style: simple
+    reportKey:
+      description: |
+        A unique string representing the report as chosen by the reporter. This should be unique enough
+        to not clash with other report's keys. To do this, we recommend namespacing the key using reverse DNS.
+      explode: false
+      in: path
+      name: reportKey
+      required: true
+      schema:
+        type: string
+      style: simple
+  schemas:
+    Error:
+      properties:
+        context:
+          description: |
+            The context attribute indicates which parameter or request entity attribute failed validation.
+            Note that the context may be null.
+          nullable: true
+          type: string
+        message:
+          description: Error description
+          type: string
+        exceptionName:
+          nullable: true
+          type: string
+      required:
+      - context
+      - exceptionName
+      - message
+      type: object
+    ErrorResponse:
+      properties:
+        errors:
+          items:
+            $ref: '#/components/schemas/Error'
+          type: array
+      required:
+      - errors
+      type: object
+    Report:
+      example:
+        result: PASS
+        link: link
+        details: details
+        reporter: reporter
+        title: title
+        logoUrl: logoUrl
+      properties:
+        title:
+          description: A short string representing the name of the report
+          maxLength: 450
+          type: string
+        details:
+          description: |
+            A string to describe the purpose of the report. This string may contain escaped newlines and
+            if it does it will display the content accordingly.
+          maxLength: 2000
+          type: string
+        result:
+          description: Indicates whether the report is in a passed or failed state
+          enum:
+          - PASS
+          - FAIL
+          type: string
+        reporter:
+          description: A string to describe the tool or company who created the report
+          maxLength: 450
+          type: string
+        link:
+          description: |
+            A URL linking to the results of the report in an external tool.
+            Must be a valid http or https URL
+          type: string
+        logoUrl:
+          description: |
+            A URL to the report logo. If none is provided, the default insights logo will be used.
+            Must be a valid http or https URL
+          type: string
+      required:
+      - title
+      type: object
+    Annotation:
+      example:
+        severity: LOW
+        path: path
+        line: 0
+        link: link
+        externalId: externalId
+        message: message
+        type: VULNERABILITY
+      properties:
+        path:
+          description: |
+            The path of the file on which this annotation should be placed. This is the path of the file relative
+            to the git repository
+          type: string
+        line:
+          description: |
+            The line number that the annotation should belong to. For file-level annotations, the line number
+            should be 0
+          type: integer
+        message:
+          description: |
+            The message to display to users.
+            The maximum length accepted is 2000 characters, however the user interface may truncate this value
+            for display purposes. We recommend that the message is short and succinct, with further details
+            available to the user if needed on the page linked to by the the annotation link.
+          maxLength: 2000
+          type: string
+        severity:
+          description: The severity of the annotation
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          type: string
+        link:
+          description: An http or https URL representing the location of the annotation
+            in the external tool
+          type: string
+        type:
+          description: The type of annotation posted
+          enum:
+          - VULNERABILITY
+          - CODE_SMELL
+          - BUG
+          type: string
+        externalId:
+          description: |
+            If the caller requires a link to get or modify this annotation, then an ID must be provided. It is not
+            used or required by Bitbucket, but only by the annotation creator for updating or deleting this
+            specific annotation.
+          maxLength: 450
+          type: string
+      required:
+      - line
+      - message
+      - path
+      - severity
+      type: object
+    AnnotationsList:
+      example:
+        annotations:
+        - severity: LOW
+          path: path
+          line: 0
+          link: link
+          externalId: externalId
+          message: message
+          type: VULNERABILITY
+        - severity: LOW
+          path: path
+          line: 0
+          link: link
+          externalId: externalId
+          message: message
+          type: VULNERABILITY
+      properties:
+        annotations:
+          items:
+            $ref: '#/components/schemas/Annotation'
+          type: array
+      required:
+      - annotations
+      type: object
+    ReportsListResponse:
+      example:
+        size: 0
+        nextPageStart: 5
+        isLastPage: true
+        values:
+        - result: PASS
+          link: link
+          details: details
+          reporter: reporter
+          title: title
+          logoUrl: logoUrl
+        - result: PASS
+          link: link
+          details: details
+          reporter: reporter
+          title: title
+          logoUrl: logoUrl
+        limit: 6
+        start: 1
+      properties:
+        size:
+          type: integer
+        limit:
+          type: integer
+        start:
+          type: integer
+        isLastPage:
+          type: boolean
+        nextPageStart:
+          type: integer
+        values:
+          items:
+            $ref: '#/components/schemas/Report'
+          type: array
+      required:
+      - isLastPage
+      - size
+      - start
+      - values
+      type: object
+  securitySchemes:
+    basicAuth:
+      scheme: basic
+      type: http
+    bearerAuth:
+      scheme: bearer
+      type: http
